@@ -85,9 +85,7 @@ const ChatPopup = () => {
       isThinking: true,
     };
     setMessages((prev) => [...prev, thinkingMsg]);
-
     const titleSession = input.slice(0, 30);
-
     try {
       // Get or create session
       let sessionId = localStorage.getItem("chat_session_id");
