@@ -7,6 +7,7 @@ const ChatPopup = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
   const chatBodyRef = useRef(null);
   const api_url = import.meta.env.VITE_API_URL;
 
@@ -77,7 +78,7 @@ const ChatPopup = () => {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setFile(null);
-
+    if (fileInputRef.current) fileInputRef.current.value = "";
     // Add "thinking" placeholder
     const thinkingMsg = {
       role: "bot",
@@ -220,6 +221,7 @@ const ChatPopup = () => {
               <input
                 id="file-upload"
                 type="file"
+                ref={fileInputRef}
                 className="hidden"
                 onChange={handleFileChange}
               />
