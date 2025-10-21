@@ -9,17 +9,17 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: "./src/main.jsx", // ✅ điểm vào chính
-      name: "ChatWidget", // tên global để browser nhận diện
-      fileName: "chat-widget", // xuất ra chat-widget.js
-      formats: ["iife"], // ✅ định dạng nhúng browser trực tiếp
+      entry: "./src/main.jsx",
+      name: "ChatWidget",
+      fileName: () => "chat-widget.js", // ✅ ép xuất ra 1 file duy nhất ở root
+      formats: ["iife"],
     },
     rollupOptions: {
       output: {
-        inlineDynamicImports: true, // ✅ gộp toàn bộ import vào 1 file duy nhất
+        dir: "dist", // ✅ tất cả nằm ở dist
+        inlineDynamicImports: true,
+        assetFileNames: "[name].[ext]", // ✅ không tạo thư mục assets/
       },
     },
-    outDir: "dist", // ✅ thư mục xuất build
-    emptyOutDir: true, // xóa dist cũ trước khi build mới
   },
 });
