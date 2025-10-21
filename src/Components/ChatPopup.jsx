@@ -95,7 +95,6 @@ const ChatPopup = () => {
     const userMsg = { role: "user", content: input || "(đã gửi tệp)" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     // Thêm message bot “đang suy nghĩ...”
@@ -107,6 +106,7 @@ const ChatPopup = () => {
     setMessages((prev) => [...prev, thinkingMsg]);
 
     const titleSession = input.slice(0, 30);
+    const isUploadFile = !!file; // ✅ Đặt cờ nếu có upload file
 
     try {
       // 🔹 Lấy hoặc tạo session mới
@@ -120,7 +120,7 @@ const ChatPopup = () => {
       }
 
       // 🔹 Gửi message hoặc upload file
-      const resMsg = file
+      const resMsg = isUploadFile
         ? await uploadFile(sessionId)
         : await sendTextMessage(sessionId);
 
@@ -134,8 +134,6 @@ const ChatPopup = () => {
         msgData = { content: text };
       }
 
-      console.log("📄 Full response length:", text.length);
-
       // Cập nhật nội dung AI trả về
       setMessages((prev) => {
         const updated = [...prev];
@@ -144,6 +142,7 @@ const ChatPopup = () => {
           updated[idx] = {
             role: "bot",
             content: msgData?.content || "🤖 Bot không phản hồi.",
+            isUploadFile, // ✅ Gắn flag để render icon sau
           };
         return updated;
       });
@@ -160,6 +159,8 @@ const ChatPopup = () => {
         return updated;
       });
     }
+
+    setFile(null); // reset file sau khi gửi
   };
 
   return (
@@ -220,6 +221,7 @@ const ChatPopup = () => {
                   {/* Icon bên phải */}
                   {msg.role === "bot" && !msg.isThinking && (
                     <div className="flex flex-col gap-1 mt-1">
+                      {/* Copy luôn hiển thị */}
                       <button
                         onClick={() => copyToClipboard(msg.content)}
                         className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
@@ -228,13 +230,16 @@ const ChatPopup = () => {
                         📋
                       </button>
 
-                      <button
-                        onClick={() => downloadAsMarkdown(msg.content)}
-                        className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
-                        title="Tải file .md"
-                      >
-                        📝
-                      </button>
+                      {/* Download chỉ hiển thị khi có upload file */}
+                      {msg.isUploadFile && (
+                        <button
+                          onClick={() => downloadAsMarkdown(msg.content)}
+                          className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
+                          title="Tải file .md"
+                        >
+                          📝
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
