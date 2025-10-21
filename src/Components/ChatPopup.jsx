@@ -177,7 +177,7 @@ const ChatPopup = () => {
         <div className="fixed bottom-24 right-6 w-80 h-[460px] bg-white shadow-2xl rounded-xl flex flex-col overflow-hidden border border-gray-200 z-50 animate-fadeIn">
           {/* Header */}
           <div className="bg-green-500 text-white p-3 flex justify-between items-center font-semibold">
-            <span>🤖 Chat với Bot</span>
+            <span>🤖 Amigo Bot</span>
             <button
               onClick={toggleChat}
               className="hover:text-gray-200 text-lg font-bold"
@@ -198,51 +198,51 @@ const ChatPopup = () => {
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <div
-                  className={`relative px-3 py-2 rounded-lg text-sm max-w-[75%] break-words ${
-                    msg.role === "user"
-                      ? "bg-green-100 text-gray-800"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {/* Hiển thị nút copy / download khi bot đã trả lời */}
+                {/* ✅ Bong bóng chat + icon bên phải */}
+                <div className="flex items-start gap-2 max-w-[85%]">
+                  <div
+                    className={`px-3 py-2 rounded-lg text-sm break-words flex-1 ${
+                      msg.role === "user"
+                        ? "bg-green-100 text-gray-800"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    <div className="prose prose-sm max-w-none">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+
+                  {/* Icon bên phải */}
                   {msg.role === "bot" && !msg.isThinking && (
-                    <div className="absolute top-1 right-1 flex gap-1">
-                      {/* Copy */}
+                    <div className="flex flex-col gap-1 mt-1">
                       <button
                         onClick={() => copyToClipboard(msg.content)}
-                        className="text-xs bg-white border border-gray-300 rounded-md px-1.5 py-0.5 hover:bg-gray-100"
+                        className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
                         title="Sao chép nội dung"
                       >
                         📋
                       </button>
 
-                      {/* Download Markdown */}
                       <button
                         onClick={() => downloadAsMarkdown(msg.content)}
-                        className="text-xs bg-white border border-gray-300 rounded-md px-1.5 py-0.5 hover:bg-gray-100"
+                        className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
                         title="Tải file .md"
                       >
                         📝
                       </button>
                     </div>
                   )}
-
-                  {/* Hiển thị nội dung Markdown */}
-                  <div className="prose prose-sm max-w-none">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Nhập tin nhắn */}
+          {/* Thanh nhập liệu */}
           <div className="flex flex-col border-t border-gray-300">
             <div className="flex items-center p-2 gap-2 bg-gray-100 border-b border-gray-200">
               <label
