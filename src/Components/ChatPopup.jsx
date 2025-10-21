@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
 const ChatPopup = () => {
@@ -11,7 +12,7 @@ const ChatPopup = () => {
   const chatBodyRef = useRef(null);
   const api_url = import.meta.env.VITE_API_URL;
 
-  // Toggle open/close chat window
+  // Toggle chat window
   const toggleChat = () => setIsOpen(!isOpen);
 
   // Auto scroll when messages update
@@ -21,7 +22,6 @@ const ChatPopup = () => {
     }
   }, [messages]);
 
-  // Handle file change
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) setFile(selected);
@@ -29,7 +29,24 @@ const ChatPopup = () => {
 
   const clearFile = () => setFile(null);
 
-  // API helpers
+  // 📋 Copy content
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("✅ Đã sao chép nội dung vào clipboard!");
+  };
+
+  // 📝 Xuất báo cáo dưới dạng Markdown
+  const downloadAsMarkdown = (content) => {
+    const blob = new Blob([content], { type: "text/markdown" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "ESG_Report.md";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // API: tạo session
   const createSession = async (titleSession) => {
     const res = await fetch(`${api_url}/sessions`, {
       method: "POST",
@@ -42,6 +59,7 @@ const ChatPopup = () => {
     return res;
   };
 
+  // API: gửi tin nhắn text
   const sendTextMessage = async (sessionId) => {
     const resMsg = await fetch(`${api_url}/messages`, {
       method: "POST",
@@ -55,6 +73,7 @@ const ChatPopup = () => {
     return resMsg;
   };
 
+  // API: upload file
   const uploadFile = async (sessionId) => {
     if (!file) return null;
     const formData = new FormData();
@@ -69,26 +88,28 @@ const ChatPopup = () => {
     return await sendTextMessage(sessionId);
   };
 
-  // Send message logic
+  // Gửi tin nhắn
   const sendMessage = async () => {
     if (!input.trim() && !file) return;
 
-    // Add user's message to chat
     const userMsg = { role: "user", content: input || "(đã gửi tệp)" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    // Add "thinking" placeholder
+
+    // Thêm message bot “đang suy nghĩ...”
     const thinkingMsg = {
       role: "bot",
       content: "🤖 Đang suy nghĩ...",
       isThinking: true,
     };
     setMessages((prev) => [...prev, thinkingMsg]);
+
     const titleSession = input.slice(0, 30);
+
     try {
-      // Get or create session
+      // 🔹 Lấy hoặc tạo session mới
       let sessionId = localStorage.getItem("chat_session_id");
       if (!sessionId) {
         const resSession = await createSession(titleSession);
@@ -98,16 +119,24 @@ const ChatPopup = () => {
         localStorage.setItem("chat_session_id", sessionId);
       }
 
-      // Send message or upload file
+      // 🔹 Gửi message hoặc upload file
       const resMsg = file
         ? await uploadFile(sessionId)
         : await sendTextMessage(sessionId);
 
       if (resMsg.status !== 201) throw new Error("❌ Lỗi gửi message");
 
-      const msgData = await resMsg.json();
+      const text = await resMsg.text();
+      let msgData;
+      try {
+        msgData = JSON.parse(text);
+      } catch (e) {
+        msgData = { content: text };
+      }
 
-      // Replace "thinking" message with bot reply
+      console.log("📄 Full response length:", text.length);
+
+      // Cập nhật nội dung AI trả về
       setMessages((prev) => {
         const updated = [...prev];
         const idx = updated.findIndex((m) => m.isThinking);
@@ -135,7 +164,7 @@ const ChatPopup = () => {
 
   return (
     <>
-      {/* Nút tròn bật chat */}
+      {/* Nút bật chat */}
       <button
         onClick={toggleChat}
         className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white text-2xl rounded-full w-14 h-14 shadow-lg flex items-center justify-center z-50 transition-transform duration-200 hover:scale-110"
@@ -157,7 +186,7 @@ const ChatPopup = () => {
             </button>
           </div>
 
-          {/* Nội dung tin nhắn */}
+          {/* Nội dung chat */}
           <div
             ref={chatBodyRef}
             className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50"
@@ -170,47 +199,51 @@ const ChatPopup = () => {
                 }`}
               >
                 <div
-                  className={`px-3 py-2 rounded-lg text-sm max-w-[75%] break-words ${
+                  className={`relative px-3 py-2 rounded-lg text-sm max-w-[75%] break-words ${
                     msg.role === "user"
                       ? "bg-green-100 text-gray-800"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {msg.fileUrl && (
-                    <a
-                      href={msg.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block mb-1 text-blue-600 underline text-xs"
-                    >
-                      📎 {msg.fileName}
-                    </a>
+                  {/* Hiển thị nút copy / download khi bot đã trả lời */}
+                  {msg.role === "bot" && !msg.isThinking && (
+                    <div className="absolute top-1 right-1 flex gap-1">
+                      {/* Copy */}
+                      <button
+                        onClick={() => copyToClipboard(msg.content)}
+                        className="text-xs bg-white border border-gray-300 rounded-md px-1.5 py-0.5 hover:bg-gray-100"
+                        title="Sao chép nội dung"
+                      >
+                        📋
+                      </button>
+
+                      {/* Download Markdown */}
+                      <button
+                        onClick={() => downloadAsMarkdown(msg.content)}
+                        className="text-xs bg-white border border-gray-300 rounded-md px-1.5 py-0.5 hover:bg-gray-100"
+                        title="Tải file .md"
+                      >
+                        📝
+                      </button>
+                    </div>
                   )}
 
-                  {/* ✅ Markdown hiển thị đúng cách */}
+                  {/* Hiển thị nội dung Markdown */}
                   <div className="prose prose-sm max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                    >
                       {msg.content}
                     </ReactMarkdown>
                   </div>
-
-                  {/* Hiển thị ảnh đính kèm */}
-                  {msg.fileUrl &&
-                    msg.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i) && (
-                      <img
-                        src={msg.fileUrl}
-                        alt="preview"
-                        className="mt-2 rounded-md max-h-32 border"
-                      />
-                    )}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Thanh nhập & chọn file */}
+          {/* Nhập tin nhắn */}
           <div className="flex flex-col border-t border-gray-300">
-            {/* Chọn file */}
             <div className="flex items-center p-2 gap-2 bg-gray-100 border-b border-gray-200">
               <label
                 htmlFor="file-upload"
@@ -238,7 +271,7 @@ const ChatPopup = () => {
               )}
             </div>
 
-            {/* Nhập nội dung */}
+            {/* Ô nhập */}
             <div className="flex">
               <input
                 value={input}

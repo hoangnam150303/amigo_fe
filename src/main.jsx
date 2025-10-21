@@ -1,5 +1,16 @@
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.jsx";
+import ReactDOM from "react-dom/client";
+import ChatPopup from "./Components/ChatPopup";
 
-createRoot(document.getElementById("root")).render(<App />);
+// Định nghĩa custom HTML tag <chat-popup>
+class ChatWidgetElement extends HTMLElement {
+  connectedCallback() {
+    const container = document.createElement("div");
+    this.appendChild(container);
+
+    const root = ReactDOM.createRoot(container);
+    root.render(<ChatPopup />);
+  }
+}
+
+// Đăng ký tag để dùng ở HTML ngoài
+customElements.define("chat-popup", ChatWidgetElement);
