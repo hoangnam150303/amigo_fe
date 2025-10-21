@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import ChatPopup from "./Components/ChatPopup";
-
+import "./index.css"; // load TailwindCSS vào bundle
 // ✅ Định nghĩa custom HTML tag <chat-popup>
 class ChatWidgetElement extends HTMLElement {
   connectedCallback() {
