@@ -126,11 +126,11 @@ const ChatPopup = () => {
 
       if (resMsg.status !== 200) throw new Error("❌ Lỗi gửi message");
 
-      const text = await resMsg.text();
-      let msgData;
+      let msgData = {};
       try {
-        msgData = JSON.parse(text);
+        msgData = await resMsg.json(); // ✅ parse JSON trực tiếp
       } catch (e) {
+        const text = await resMsg.text();
         msgData = { content: text };
       }
 
@@ -141,8 +141,8 @@ const ChatPopup = () => {
         if (idx !== -1)
           updated[idx] = {
             role: "bot",
-            content: msgData["content"] || "🤖 Bot không phản hồi.",
-            isUploadFile, // ✅ Gắn flag để render icon sau
+            content: msgData?.content || "🤖 Bot không phản hồi.",
+            isUploadFile,
           };
         return updated;
       });
