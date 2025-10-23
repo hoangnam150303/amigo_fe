@@ -141,7 +141,7 @@ const ChatPopup = () => {
         if (idx !== -1)
           updated[idx] = {
             role: "bot",
-            content: msgData?.content || "🤖 Bot không phản hồi.",
+            content: msgData["content"] || "🤖 Bot không phản hồi.",
             isUploadFile, // ✅ Gắn flag để render icon sau
           };
         return updated;
