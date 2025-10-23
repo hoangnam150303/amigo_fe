@@ -70,7 +70,8 @@ const ChatPopup = () => {
         content: input,
       }),
     });
-    console.log(resMsg)
+   const text = await resMsg.text();
+   console.log(text)
     return resMsg;
   };
 
