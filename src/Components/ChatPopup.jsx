@@ -70,6 +70,7 @@ const ChatPopup = () => {
         content: input,
       }),
     });
+    console.log(resMsg)
     return resMsg;
   };
 
@@ -126,11 +127,11 @@ const ChatPopup = () => {
 
       if (resMsg.status !== 200) throw new Error("❌ Lỗi gửi message");
 
-      let msgData = {};
+      const text = await resMsg.text();
+      let msgData;
       try {
-        msgData = await resMsg.json(); // ✅ parse JSON trực tiếp
+        msgData = JSON.parse(text);
       } catch (e) {
-        const text = await resMsg.text();
         msgData = { content: text };
       }
 
@@ -141,8 +142,8 @@ const ChatPopup = () => {
         if (idx !== -1)
           updated[idx] = {
             role: "bot",
-            content: msgData?.content || "🤖 Bot không phản hồi.",
-            isUploadFile,
+            content: msgData["content"] || "🤖 Bot không phản hồi.",
+            isUploadFile, // ✅ Gắn flag để render icon sau
           };
         return updated;
       });
