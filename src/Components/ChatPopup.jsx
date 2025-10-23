@@ -124,7 +124,7 @@ const ChatPopup = () => {
         ? await uploadFile(sessionId)
         : await sendTextMessage(sessionId);
 
-      if (resMsg.status !== 201) throw new Error("❌ Lỗi gửi message");
+      if (resMsg.status !== 200) throw new Error("❌ Lỗi gửi message");
 
       const text = await resMsg.text();
       let msgData;
