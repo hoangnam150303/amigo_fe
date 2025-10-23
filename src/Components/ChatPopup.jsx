@@ -70,8 +70,6 @@ const ChatPopup = () => {
         content: input,
       }),
     });
-   const text = await resMsg.text();
-   console.log(text)
     return resMsg;
   };
 
@@ -108,7 +106,7 @@ const ChatPopup = () => {
     setMessages((prev) => [...prev, thinkingMsg]);
 
     const titleSession = input.slice(0, 30);
-    const isUploadFile = !!file; // ✅ Đặt cờ nếu có upload file
+    const isUploadFile = !!file;
 
     try {
       // 🔹 Lấy hoặc tạo session mới
@@ -126,15 +124,13 @@ const ChatPopup = () => {
         ? await uploadFile(sessionId)
         : await sendTextMessage(sessionId);
 
-      if (resMsg.status !== 200) throw new Error("❌ Lỗi gửi message");
+      if (!resMsg.ok) throw new Error(`❌ Lỗi gửi message: ${resMsg.status}`);
 
-      const text = await resMsg.text();
-      let msgData;
-      try {
-        msgData = JSON.parse(text);
-      } catch (e) {
-        msgData = { content: text };
-      }
+      // ✅ Đọc JSON một lần duy nhất
+      let msgData = await resMsg.json();
+      if (msgData.response) msgData = msgData.response;
+
+      console.log("🤖 Response từ server:", msgData);
 
       // Cập nhật nội dung AI trả về
       setMessages((prev) => {
@@ -143,13 +139,13 @@ const ChatPopup = () => {
         if (idx !== -1)
           updated[idx] = {
             role: "bot",
-            content: msgData["content"] || "🤖 Bot không phản hồi.",
-            isUploadFile, // ✅ Gắn flag để render icon sau
+            content: msgData?.content || "🤖 Bot không phản hồi.",
+            isUploadFile,
           };
         return updated;
       });
     } catch (error) {
-      console.error(error);
+      console.error("⚠️ Gửi tin nhắn lỗi:", error);
       setMessages((prev) => {
         const updated = [...prev];
         const idx = updated.findIndex((m) => m.isThinking);
@@ -201,7 +197,6 @@ const ChatPopup = () => {
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {/* ✅ Bong bóng chat + icon bên phải */}
                 <div className="flex items-start gap-2 max-w-[85%]">
                   <div
                     className={`px-3 py-2 rounded-lg text-sm break-words flex-1 ${
@@ -223,7 +218,6 @@ const ChatPopup = () => {
                   {/* Icon bên phải */}
                   {msg.role === "bot" && !msg.isThinking && (
                     <div className="flex flex-col gap-1 mt-1">
-                      {/* Copy luôn hiển thị */}
                       <button
                         onClick={() => copyToClipboard(msg.content)}
                         className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
@@ -231,8 +225,6 @@ const ChatPopup = () => {
                       >
                         📋
                       </button>
-
-                      {/* Download chỉ hiển thị khi có upload file */}
                       {msg.isUploadFile && (
                         <button
                           onClick={() => downloadAsMarkdown(msg.content)}
@@ -278,7 +270,6 @@ const ChatPopup = () => {
               )}
             </div>
 
-            {/* Ô nhập */}
             <div className="flex">
               <input
                 value={input}
