@@ -61,7 +61,7 @@ const ChatPopup = () => {
 
   // API: gửi tin nhắn text
   const sendTextMessage = async (sessionId) => {
-    const resMsg = await fetch(`${api_url}/messages/bot`, {
+    const resMsg = await fetch(`${api_url}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
