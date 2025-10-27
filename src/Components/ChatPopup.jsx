@@ -228,7 +228,7 @@ const ChatPopup = () => {
                         📋
                       </button>
 
-                      {file != null ? (
+                      {msg.isFileResponse && (
                         <button
                           onClick={() => downloadAsMarkdown(msg.content)}
                           className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
@@ -236,8 +236,6 @@ const ChatPopup = () => {
                         >
                           📝
                         </button>
-                      ) : (
-                        <></>
                       )}
                     </div>
                   )}
