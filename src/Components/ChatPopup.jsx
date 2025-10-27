@@ -136,7 +136,7 @@ const ChatPopup = () => {
 
       console.log("📄 Full response length:", text.length);
 
-      // Cập nhật nội dung AI trả về
+      // ✅ Cập nhật nội dung AI trả về
       setMessages((prev) => {
         const updated = [...prev];
         const idx = updated.findIndex((m) => m.isThinking);
@@ -144,6 +144,7 @@ const ChatPopup = () => {
           updated[idx] = {
             role: "bot",
             content: msgData?.content || "🤖 Bot không phản hồi.",
+            isFileResponse: !!file, // ✅ Thêm flag để hiện nút tải file .md
           };
         return updated;
       });
