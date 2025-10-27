@@ -228,13 +228,17 @@ const ChatPopup = () => {
                         📋
                       </button>
 
-                      <button
-                        onClick={() => downloadAsMarkdown(msg.content)}
-                        className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
-                        title="Tải file .md"
-                      >
-                        📝
-                      </button>
+                      {file != null ? (
+                        <button
+                          onClick={() => downloadAsMarkdown(msg.content)}
+                          className="text-xs bg-white border border-gray-300 rounded-md p-1 hover:bg-gray-100"
+                          title="Tải file .md"
+                        >
+                          📝
+                        </button>
+                      ) : (
+                        <></>
+                      )}
                     </div>
                   )}
                 </div>
